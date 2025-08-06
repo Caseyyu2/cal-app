@@ -1,0 +1,64 @@
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.activity-item {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: white;
+  border-left: 4px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.activity-item.selected {
+  background-color: #f0f7ff;
+  border-left-color: #2196f3;
+}
+
+.activity-item.work {
+  border-left-color: #2196f3;
+}
+
+.activity-item.personal {
+  border-left-color: #4caf50;
+}
+
+.activity-item.health {
+  border-left-color: #ff9800;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.activity-title {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.activity-location {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.empty-list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: #888;
+  font-style: italic;
+}
