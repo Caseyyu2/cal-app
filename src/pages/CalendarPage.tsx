@@ -81,6 +81,4 @@ function CalendarPage() {
   );
 }
 
-CalendarPage.clientLoader = clientLoader;
-
 export default CalendarPage;

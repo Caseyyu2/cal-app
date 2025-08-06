@@ -1,6 +1,8 @@
 import { Navigate, ActionFunctionArgs } from 'react-router-dom'
 import App from './App'
-import CalendarPage, { clientLoader } from './pages/CalendarPage'
+import { clientLoader } from './pages/CalendarPage'
+import CalendarIndexPage from './pages/CalendarIndexPage'
+import ActivityDetailPage from './pages/ActivityDetailPage'
 import activitiesApi from './api/activitiesApi'
 
 // Action to update activity - returns promise for better Suspense integration
@@ -55,12 +57,12 @@ export const routes = [
     children: [
       {
         index: true,
-        element: <CalendarPage />,
+        element: <CalendarIndexPage />,
         loader: clientLoader
       },
       {
         path: 'activity/:id',
-        element: <CalendarPage />,
+        element: <ActivityDetailPage />,
         loader: clientLoader,
         action: updateActivityAction
       },
