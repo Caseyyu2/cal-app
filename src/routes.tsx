@@ -1,18 +1,19 @@
 import { Navigate, ActionFunctionArgs } from 'react-router-dom'
 import App from './App'
-import { clientLoader } from './pages/CalendarPage'
-import CalendarIndexPage from './pages/CalendarIndexPage'
-import ActivityDetailPage from './pages/ActivityDetailPage'
-import activitiesApi from './api/activitiesApi'
+import CalendarPageGraphQL, { graphqlClientLoader } from './pages/CalendarPageGraphQL'
+import { apolloClient } from './graphql/apollo-client'
+import { createApolloAction, invalidateQueries } from './graphql/apollo-router-integration'
+import { UpdateActivityDocument, ActivityCategory, GetActivitiesDocument, GetActivityDocument } from './gql/graphql'
 
-// Action to update activity - returns promise for better Suspense integration
-export const updateActivityAction = ({ request, params }: ActionFunctionArgs) => {
-  return request.formData().then(formData => {
+// Create the update activity action using our custom integration
+const updateActivityMutation = createApolloAction(
+  apolloClient,
+  UpdateActivityDocument,
+  (formData) => {
     const updates = Object.fromEntries(formData);
     
-    if (!params.id) {
-      return Promise.resolve({ success: false, error: 'Activity ID is required' });
-    }
+    // Get ID from the form or it should be passed separately
+    const id = updates.id as string;
     
     // Validate required fields
     const title = (updates.title as string)?.trim();
@@ -23,31 +24,110 @@ export const updateActivityAction = ({ request, params }: ActionFunctionArgs) =>
     const startTime = new Date(updates.startTime as string);
     const endTime = new Date(updates.endTime as string);
     
-    // Validate dates
-    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-      return Promise.resolve({ success: false, error: 'Invalid date format' });
-    }
-    
-    if (endTime <= startTime) {
-      return Promise.resolve({ success: false, error: 'End time must be after start time' });
-    }
-    
-    const activityUpdates = {
-      title,
-      description,
-      location,
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      category: updates.category as 'work' | 'personal' | 'health'
+    // Map category string to GraphQL enum
+    const categoryMap: Record<string, ActivityCategory> = {
+      'work': ActivityCategory.Work,
+      'personal': ActivityCategory.Personal,
+      'health': ActivityCategory.Health
     };
     
-    return activitiesApi.updateActivity(params.id, activityUpdates)
-      .then(updatedActivity => ({ success: true, activity: updatedActivity }))
-      .catch(error => ({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to update activity' 
-      }));
-  });
+    return {
+      id,
+      input: {
+        title,
+        description,
+        location,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        category: categoryMap[updates.category as string]
+      }
+    };
+  }
+);
+
+// Wrapper action that handles validation and cache invalidation
+export const updateActivityAction = async ({ request, params }: ActionFunctionArgs) => {
+  console.log('updateActivityAction called with params:', params);
+  
+  if (!params.id) {
+    return { success: false, error: 'Activity ID is required' };
+  }
+  
+  // Get form data
+  const formData = await request.formData();
+  const updates = Object.fromEntries(formData);
+  console.log('Form data:', updates);
+  
+  // Validate dates
+  const startTime = new Date(updates.startTime as string);
+  const endTime = new Date(updates.endTime as string);
+  
+  if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+    return { success: false, error: 'Invalid date format' };
+  }
+  
+  if (endTime <= startTime) {
+    return { success: false, error: 'End time must be after start time' };
+  }
+  
+  // Map category string to GraphQL enum
+  const categoryMap: Record<string, ActivityCategory> = {
+    'work': ActivityCategory.Work,
+    'personal': ActivityCategory.Personal,
+    'health': ActivityCategory.Health
+  };
+  
+  try {
+    // Prepare the updated activity data
+    const updatedActivity = {
+      __typename: 'Activity' as const,
+      id: params.id,
+      title: (updates.title as string)?.trim(),
+      description: (updates.description as string)?.trim(),
+      location: (updates.location as string)?.trim(),
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      category: categoryMap[updates.category as string]
+    };
+
+    // Execute mutation with optimistic response
+    const result = await apolloClient.mutate({
+      mutation: UpdateActivityDocument,
+      variables: {
+        id: params.id,
+        input: {
+          title: updatedActivity.title,
+          description: updatedActivity.description,
+          location: updatedActivity.location,
+          startTime: updatedActivity.startTime,
+          endTime: updatedActivity.endTime,
+          category: updatedActivity.category
+        }
+      },
+      optimisticResponse: {
+        __typename: 'Mutation',
+        updateActivity: updatedActivity
+      },
+      // Refetch queries to update the cache after mutation
+      refetchQueries: [
+        { query: GetActivitiesDocument },
+        { query: GetActivityDocument, variables: { id: params.id } }
+      ]
+    });
+    
+    console.log('Mutation result:', result);
+    
+    return { 
+      success: true, 
+      activity: result.data?.updateActivity 
+    };
+  } catch (error) {
+    console.error('Mutation error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to update activity' 
+    };
+  }
 };
 
 export const routes = [
@@ -57,14 +137,13 @@ export const routes = [
     children: [
       {
         index: true,
-        element: <CalendarIndexPage />,
-        loader: clientLoader
+        element: <CalendarPageGraphQL />,
+        loader: graphqlClientLoader
       },
       {
         path: 'activity/:id',
-        element: <ActivityDetailPage />,
-        loader: clientLoader,
-        action: updateActivityAction
+        element: <CalendarPageGraphQL />,
+        loader: graphqlClientLoader
       },
       {
         path: '*',

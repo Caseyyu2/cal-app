@@ -1,0 +1,38 @@
+# Get all activities
+query GetActivities {
+  activities {
+    id
+    title
+    description
+    location
+    startTime
+    endTime
+    category
+  }
+}
+
+# Get a single activity by ID
+query GetActivity($id: ID!) {
+  activity(id: $id) {
+    id
+    title
+    description
+    location
+    startTime
+    endTime
+    category
+  }
+}
+
+# Get activities by date range
+query GetActivitiesByDateRange($startDate: String!, $endDate: String!) {
+  activitiesByDateRange(startDate: $startDate, endDate: $endDate) {
+    id
+    title
+    description
+    location
+    startTime
+    endTime
+    category
+  }
+}

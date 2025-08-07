@@ -8,7 +8,7 @@ const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(r
 const activitiesApi = {
   // Get all activities
   getAllActivities: async (): Promise<Activity[]> => {
-    await delay(200); // Simulate network delay
+    await delay(300); // Simulate network delay
     console.log("+++++++++++++++++++, getAllActivities fired")
     return [...activities];
   },
@@ -40,7 +40,7 @@ const activitiesApi = {
   
   // Update activity
   updateActivity: async (id: number | string, updates: Partial<Activity>): Promise<Activity> => {
-    await delay(300);
+    await delay(3000);
     
     const index = activities.findIndex(act => act.id === parseInt(id.toString()));
     

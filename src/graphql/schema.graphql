@@ -1,0 +1,61 @@
+# Activity type definition
+type Activity {
+  id: ID!
+  title: String!
+  description: String!
+  location: String!
+  startTime: String!
+  endTime: String!
+  category: ActivityCategory!
+}
+
+# Activity category enum
+enum ActivityCategory {
+  work
+  personal
+  health
+}
+
+# Input type for creating/updating activities
+input ActivityInput {
+  title: String!
+  description: String!
+  location: String!
+  startTime: String!
+  endTime: String!
+  category: ActivityCategory!
+}
+
+# Input type for updating activities (all fields optional)
+input UpdateActivityInput {
+  title: String
+  description: String
+  location: String
+  startTime: String
+  endTime: String
+  category: ActivityCategory
+}
+
+# Root Query type
+type Query {
+  # Get all activities
+  activities: [Activity!]!
+  
+  # Get a single activity by ID
+  activity(id: ID!): Activity
+  
+  # Get activities within a date range
+  activitiesByDateRange(startDate: String!, endDate: String!): [Activity!]!
+}
+
+# Root Mutation type
+type Mutation {
+  # Create a new activity
+  createActivity(input: ActivityInput!): Activity!
+  
+  # Update an existing activity
+  updateActivity(id: ID!, input: UpdateActivityInput!): Activity!
+  
+  # Delete an activity
+  deleteActivity(id: ID!): Boolean!
+}
