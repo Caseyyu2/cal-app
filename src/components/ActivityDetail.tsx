@@ -182,7 +182,8 @@ function ActivityDetail({ activity, onClose }: ActivityDetailProps) {
   }
 
   // Use optimistic data for display
-  const displayActivity = fetcher.state !== 'idle' ? optimisticActivity : activity;
+  // const displayActivity = fetcher.state !== 'idle' ? optimisticActivity : activity;
+  const displayActivity = activity;
 
   return (
     <div className="activity-detail-overlay">

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Await } from 'react-router';
-import { useNavigate, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { useNavigate, LoaderFunctionArgs, useLoaderData, ShouldRevalidateFunctionArgs } from 'react-router-dom';
 import ActivityList from '../components/ActivityList';
 import CalendarView from '../components/CalendarView';
 import ActivityDetail from '../components/ActivityDetail';
@@ -14,21 +14,22 @@ interface DeferredLoaderData {
 }
 
 // Client loader function - returns promises directly
-export const clientLoader = ({ params }: LoaderFunctionArgs) => {
-  if (params.id) {
-    // Activity detail route - return promises directly
-    return {
-      activities: activitiesApi.getAllActivities(),
-      selectedActivity: activitiesApi.getActivityById(params.id)
-    };
-  } else {
-    // Index route - return promises directly
-    return {
-      activities: activitiesApi.getAllActivities(),
-      selectedActivity: Promise.resolve(null)
-    };
-  }
+export const calendarClientLoader = ({ params }: LoaderFunctionArgs) => {
+  return {
+    activities: activitiesApi.getAllActivities(),
+    selectedActivity: Promise.resolve(null)
+  };
 };
+
+function shouldRevalidate(
+  arg: ShouldRevalidateFunctionArgs,
+) {
+  if (arg.formAction == "Edit") {
+    return true;
+  }
+
+  return false;
+}
 
 function CalendarPage() {
   const loaderData = useLoaderData() as DeferredLoaderData;
