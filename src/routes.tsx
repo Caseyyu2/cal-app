@@ -2,48 +2,7 @@ import { Navigate, ActionFunctionArgs } from 'react-router-dom'
 import App from './App'
 import CalendarPageGraphQL, { graphqlClientLoader } from './pages/CalendarPageGraphQL'
 import { apolloClient } from './graphql/apollo-client'
-import { createApolloAction, invalidateQueries } from './graphql/apollo-router-integration'
 import { UpdateActivityDocument, ActivityCategory, GetActivitiesDocument, GetActivityDocument } from './gql/graphql'
-
-// Create the update activity action using our custom integration
-const updateActivityMutation = createApolloAction(
-  apolloClient,
-  UpdateActivityDocument,
-  (formData) => {
-    const updates = Object.fromEntries(formData);
-    
-    // Get ID from the form or it should be passed separately
-    const id = updates.id as string;
-    
-    // Validate required fields
-    const title = (updates.title as string)?.trim();
-    const description = (updates.description as string)?.trim();
-    const location = (updates.location as string)?.trim();
-    
-    // Convert form data to proper types and format dates
-    const startTime = new Date(updates.startTime as string);
-    const endTime = new Date(updates.endTime as string);
-    
-    // Map category string to GraphQL enum
-    const categoryMap: Record<string, ActivityCategory> = {
-      'work': ActivityCategory.Work,
-      'personal': ActivityCategory.Personal,
-      'health': ActivityCategory.Health
-    };
-    
-    return {
-      id,
-      input: {
-        title,
-        description,
-        location,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        category: categoryMap[updates.category as string]
-      }
-    };
-  }
-);
 
 // Wrapper action that handles validation and cache invalidation
 export const updateActivityAction = async ({ request, params }: ActionFunctionArgs) => {
