@@ -1,16 +1,3 @@
-# Create a new activity
-mutation CreateActivity($input: ActivityInput!) {
-  createActivity(input: $input) {
-    id
-    title
-    description
-    location
-    startTime
-    endTime
-    category
-  }
-}
-
 # Update an existing activity
 mutation UpdateActivity($id: ID!, $input: UpdateActivityInput!) {
   updateActivity(id: $id, input: $input) {

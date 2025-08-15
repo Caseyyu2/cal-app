@@ -73,7 +73,7 @@ export const resolvers = {
     },
     
     updateActivity: async (_: any, { id, input }: { id: string; input: Partial<Activity> }) => {
-      await delay(3000);
+      await delay(300);
       console.log("+++++++++++++++++++, GraphQL updateActivity mutation fired");
       
       const index = activities.findIndex(act => act.id === parseInt(id));
