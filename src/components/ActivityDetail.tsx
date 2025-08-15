@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFetcher } from 'react-router-dom';
+import { useFetcher } from 'react-router';
 import { Activity } from '../types';
 import './ActivityDetail.css';
 
@@ -183,7 +183,7 @@ function ActivityDetail({ activity, onClose }: ActivityDetailProps) {
 
   // Use optimistic data for display
   // const displayActivity = fetcher.state !== 'idle' ? optimisticActivity : activity;
-  const displayActivity = activity;
+  const displayActivity = activity
 
   return (
     <div className="activity-detail-overlay">

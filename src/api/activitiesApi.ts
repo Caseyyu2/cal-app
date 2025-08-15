@@ -25,19 +25,6 @@ const activitiesApi = {
     return activity;
   },
   
-  // Get activities by date range
-  getActivitiesByDateRange: async (startDate: string | Date, endDate: string | Date): Promise<Activity[]> => {
-    await delay(300);
-    
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    return activities.filter(activity => {
-      const activityDate = new Date(activity.startTime);
-      return activityDate >= start && activityDate <= end;
-    });
-  },
-  
   // Update activity
   updateActivity: async (id: number | string, updates: Partial<Activity>): Promise<Activity> => {
     await delay(300);

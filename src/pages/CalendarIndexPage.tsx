@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData } from 'react-router';
 import CalendarLayout from '../components/CalendarLayout';
 import { Activity } from '../types';
 

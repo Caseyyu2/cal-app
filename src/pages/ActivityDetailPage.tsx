@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Await } from 'react-router';
-import { useLoaderData, useNavigate, LoaderFunctionArgs } from 'react-router-dom';
+import { useLoaderData, useNavigate, LoaderFunctionArgs } from 'react-router';
 import CalendarLayout from '../components/CalendarLayout';
 import ActivityDetail from '../components/ActivityDetail';
 import activitiesApi from '../api/activitiesApi';
