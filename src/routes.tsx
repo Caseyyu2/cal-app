@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router'
 import App from './App'
 import { calendarClientLoader } from './pages/CalendarPage'
 import CalendarIndexPage from './pages/CalendarIndexPage'

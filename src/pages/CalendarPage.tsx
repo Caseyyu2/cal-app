@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Await } from 'react-router';
-import { useNavigate, LoaderFunctionArgs, useLoaderData, ShouldRevalidateFunctionArgs } from 'react-router-dom';
+import { useNavigate, LoaderFunctionArgs, useLoaderData } from 'react-router';
 import ActivityList from '../components/ActivityList';
 import CalendarView from '../components/CalendarView';
 import ActivityDetail from '../components/ActivityDetail';
@@ -20,16 +20,6 @@ export const calendarClientLoader = ({ params }: LoaderFunctionArgs) => {
     selectedActivity: Promise.resolve(null)
   };
 };
-
-function shouldRevalidate(
-  arg: ShouldRevalidateFunctionArgs,
-) {
-  if (arg.formAction == "Edit") {
-    return true;
-  }
-
-  return false;
-}
 
 function CalendarPage() {
   const loaderData = useLoaderData() as DeferredLoaderData;

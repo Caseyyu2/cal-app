@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Await } from 'react-router';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import ActivityList from './ActivityList';
 import CalendarView from './CalendarView';
 import { Activity } from '../types';
