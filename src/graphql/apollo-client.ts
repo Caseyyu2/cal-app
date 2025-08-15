@@ -1,4 +1,5 @@
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { InMemoryCache } from '@apollo/client';
+import { ApolloClient } from '@apollo/client-integration-react-router';
 import { SchemaLink } from '@apollo/client/link/schema';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { typeDefs } from './typeDefs';
@@ -10,7 +11,7 @@ const schema = makeExecutableSchema({
   resolvers
 });
 
-// Create Apollo Client with mock schema
+// Create Apollo Client with mock schema using the integration's ApolloClient
 export const apolloClient = new ApolloClient({
   link: new SchemaLink({ schema }),
   cache: new InMemoryCache({
@@ -35,7 +36,7 @@ export const apolloClient = new ApolloClient({
   }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'cache-first'
     }
   }
 });

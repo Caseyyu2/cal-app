@@ -1,33 +1,32 @@
 import * as React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import {  useQuery } from '@apollo/client';
+import { useNavigate, useParams, useLoaderData } from 'react-router-dom';
+import { useReadQuery } from '@apollo/client/react';
 import ActivityList from '../components/ActivityList';
 import CalendarView from '../components/CalendarView';
 import ActivityDetailGraphQL from '../components/ActivityDetailGraphQL';
-import { apolloLoader, ApolloLoaderArgs } from '../graphql/apollo-router-integration';
-import { GetActivitiesDocument, GetActivityDocument,  GetActivitiesQueryVariables, GetActivityQueryVariables } from '../gql/graphql';
+import { apolloLoader } from '../graphql/apollo-router-integration';
+import { GetActivitiesDocument, GetActivityDocument, GetActivitiesQueryVariables, GetActivityQueryVariables } from '../gql/graphql';
 import { Activity } from '../types';
 import './CalendarPage.css';
 
-
 // Create the loader using the apolloLoader pattern
-export const graphqlClientLoader = apolloLoader<ApolloLoaderArgs>()(
-  (args: ApolloLoaderArgs) => {
-    const { preloadQuery, params } = args;
-    
-    // Preload activities query
-    const activitiesRef = preloadQuery(GetActivitiesDocument, {
+export const graphqlClientLoader = apolloLoader()(
+  ({ preloadQuery, params }) => {
+    // Always preload activities query
+    const activitiesQueryRef = preloadQuery(GetActivitiesDocument, {
       variables: {} satisfies GetActivitiesQueryVariables,
     });
     
-    // Conditionally preload activity detail query
-    const activityRef = params.id 
-      ? preloadQuery(GetActivityDocument, {
-          variables: { id: params.id } satisfies GetActivityQueryVariables,
-        })
-      : null;
+    // Always preload activity detail query, even with empty ID
+    // This ensures consistent hook order in the component
+    const activityQueryRef = preloadQuery(GetActivityDocument, {
+      variables: { id: params.id || '' } satisfies GetActivityQueryVariables,
+    });
     
-    return { activitiesRef, activityRef };
+    return { 
+      activitiesQueryRef,
+      activityQueryRef 
+    };
   }
 );
 
@@ -35,14 +34,14 @@ function CalendarPageGraphQL() {
   const navigate = useNavigate();
   const params = useParams();
   
-  // Use useQuery for activities to get automatic cache updates
-  const { data: activitiesData, loading: activitiesLoading } = useQuery(GetActivitiesDocument);
+  // Get query references from loader
+  const { activitiesQueryRef, activityQueryRef } = useLoaderData<typeof graphqlClientLoader>();
   
-  // Use useQuery for the selected activity to get automatic cache updates
-  const { data: activityData } = useQuery(GetActivityDocument, {
-    variables: { id: params.id || '' },
-    skip: !params.id
-  });
+  // Use useReadQuery to read the data
+  const { data: activitiesData } = useReadQuery(activitiesQueryRef);
+  
+  // Always call useReadQuery for activity data
+  const { data: activityData } = useReadQuery(activityQueryRef);
   
   const handleActivitySelect = (id: number) => {
     navigate(`/activity/${id}`);
@@ -52,19 +51,15 @@ function CalendarPageGraphQL() {
     navigate('/');
   };
 
-  if (activitiesLoading) {
-    return <div className="loading">Loading activities...</div>;
-  }
-
   // Convert GraphQL activities to match the existing Activity type
-  const activities: Activity[] = (activitiesData?.activities || []).map(activity => ({
+  const activities: Activity[] = ((activitiesData as any)?.activities || []).map((activity: any) => ({
     ...activity,
     id: parseInt(activity.id)
   }));
 
-  // Get the selected activity from the query data (which will update automatically)
-  const selectedActivity = activityData?.activity 
-    ? { ...activityData.activity, id: parseInt(activityData.activity.id) }
+  // Get the selected activity from the query data
+  const selectedActivity = (activityData as any)?.activity 
+    ? { ...(activityData as any).activity, id: parseInt((activityData as any).activity.id) }
     : null;
 
   return (

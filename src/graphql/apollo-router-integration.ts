@@ -1,44 +1,49 @@
-import { ApolloClient, DocumentNode, OperationVariables, ApolloQueryResult, FetchResult, QueryOptions } from '@apollo/client';
-import { LoaderFunctionArgs } from 'react-router-dom';
+import { createApolloLoaderHandler, ApolloClient } from '@apollo/client-integration-react-router';
+import { InMemoryCache } from '@apollo/client';
+import { SchemaLink } from '@apollo/client/link/schema';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { typeDefs } from './typeDefs';
+import { resolvers } from './resolvers';
 
-/**
- * Custom Apollo Client integration for React Router
- * Provides utilities for integrating Apollo queries with React Router loaders
- */
+// Create executable schema
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
 
-// Import apolloClient for preloadQuery
-import { apolloClient } from './apollo-client';
-
-// Type for the preloadQuery function
-type PreloadQueryFn = <TData = any, TVariables extends OperationVariables = OperationVariables>(
-  query: DocumentNode,
-  options?: Omit<QueryOptions<TVariables, TData>, 'query'>
-) => Promise<ApolloQueryResult<TData>>;
-
-// Extended loader args with preloadQuery
-export interface ApolloLoaderArgs extends LoaderFunctionArgs {
-  preloadQuery: PreloadQueryFn;
+// Create Apollo Client factory for React Router
+function makeClient() {
+  return new ApolloClient({
+    link: new SchemaLink({ schema }),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            activity: {
+              read(_, { args, toReference }) {
+                return toReference({
+                  __typename: 'Activity',
+                  id: args?.id
+                });
+              }
+            }
+          }
+        },
+        Activity: {
+          keyFields: ['id']
+        }
+      }
+    }),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-first'
+      }
+    }
+  });
 }
 
-// Apollo loader factory function
-export function apolloLoader<TArgs extends ApolloLoaderArgs = ApolloLoaderArgs>() {
-  return <TReturn>(loaderFn: (args: TArgs) => TReturn) => {
-    return (args: LoaderFunctionArgs): TReturn => {
-      // Create the preloadQuery function
-      const preloadQuery: PreloadQueryFn = (query, options) => {
-        return apolloClient.query({
-          query,
-          ...options,
-          fetchPolicy: options?.fetchPolicy || 'cache-first'
-        });
-      };
+// Create the Apollo loader handler
+export const apolloLoader = createApolloLoaderHandler(makeClient);
 
-      // Call the loader function with extended args
-      return loaderFn({
-        ...args,
-        preloadQuery
-      } as TArgs);
-    };
-  };
-}
-
+// Re-export types
+export type { createApolloLoaderHandler } from '@apollo/client-integration-react-router';

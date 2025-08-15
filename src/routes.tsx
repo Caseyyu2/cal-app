@@ -1,4 +1,4 @@
-import { Navigate, ActionFunctionArgs } from 'react-router-dom'
+import { Navigate, ActionFunctionArgs } from 'react-router'
 import App from './App'
 import CalendarPageGraphQL, { graphqlClientLoader } from './pages/CalendarPageGraphQL'
 import { apolloClient } from './graphql/apollo-client'
