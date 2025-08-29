@@ -11,7 +11,7 @@ let activities = [...initialActivities];
 export const resolvers = {
   Query: {
     activities: async () => {
-      await delay(2000);
+      await delay(200);
       console.log("+++++++++++++++++++, GraphQL activities query fired");
       // Return activities with string IDs for proper cache normalization
       return activities.map(activity => ({

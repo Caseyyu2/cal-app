@@ -36,7 +36,7 @@ export const apolloClient = new ApolloClient({
   }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-first'
+      fetchPolicy: 'cache-only'
     }
   }
 });
